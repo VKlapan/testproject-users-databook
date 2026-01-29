@@ -1,0 +1,14 @@
+{
+  "name": "users-databook",
+  "private": true,
+  "version": "0.0.0",
+"packageManager": "pnpm@8.8.0",
+  "devDependencies": {
+    "turbo": "2.8.0",
+    "typescript": "^5.3.0"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build"
+  }
+}
