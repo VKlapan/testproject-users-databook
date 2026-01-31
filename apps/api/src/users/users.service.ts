@@ -12,4 +12,12 @@ export class UsersService {
     async getAllUsers(): Promise<User[]> {
     return this.userModel.find().exec();
   }
+
+  count() {
+    return this.userModel.countDocuments();
+  }
+
+  async bulkCreate(users: Partial<User>[]) {
+    return this.userModel.insertMany(users);
+  }
 }
