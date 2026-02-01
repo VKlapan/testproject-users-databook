@@ -13,8 +13,8 @@ export class SeedService implements OnModuleInit {
       return;
     }
 
-    const TOTAL_USERS = 10;
-    const BATCH_SIZE = 2;
+    const TOTAL_USERS = Number(process.env.SEED_TOTAL_USERS || 10);
+    const BATCH_SIZE = Number(process.env.SEED_BATCH_SIZE || 2);
 
     console.log('Seed: Start generating users...');
 
