@@ -9,8 +9,16 @@ export class UsersService {
     private userModel: Model<User>,
   ) {}
 
-    async getAllUsers(): Promise<User[]> {
-    return this.userModel.find().exec();
+  async getAllUsers(): Promise<User[]> {
+    return this.userModel.find();
+  }
+  
+  async getUserById(id: string): Promise<User | null> {
+    return this.userModel.findById(id);
+  }
+  async addUser(user: CreateUserDto): Promise<User> {
+    const newUser = new this.userModel(user);
+    return newUser.save();
   }
 
   count() {
