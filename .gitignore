@@ -2,6 +2,7 @@ init-*
 node_modules
 dist
 coverage
+docs
 
 .turbo
 

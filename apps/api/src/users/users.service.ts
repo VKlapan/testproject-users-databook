@@ -4,23 +4,21 @@ import { User } from './interfaces/user.interface';
 import { CreateUserDto } from './dto/create-user.dto';
 @Injectable()
 /**
- * Service for user-related data operations.
- *
- * Provides methods for listing, retrieving and creating users.
+ * Service managing user data.
  */
 export class UsersService {
   /**
-   * Create users service.
+   * Injects the `User` mongoose model.
    * @param userModel Mongoose model for User
    */
-      constructor(
+  constructor(
     @Inject('USER_MODEL')
     private userModel: Model<User>,
   ) {}
 
   /**
-   * Get paginated users with optional search.
-   * @param options pagination and optional search params
+   * Returns paginated users with optional search by name, email or phone.
+   * @param options Pagination and optional search params.
    */
   async getUsers(options: { page: number; limit: number; search?: string }) {
     const { page, limit, search } = options;
@@ -55,20 +53,21 @@ export class UsersService {
       total,
       currentPage,
       pages: Math.ceil(total / limit),
-    };
+    }; 
   }
 
   /**
-   * Get single user by id.
-   * @param id user's id
+   * Returns a single user by id.
+   * @param id User id.
+   * @returns User document or null.
    */
   async getUserById(id: string): Promise<User | null> {
     return this.userModel.findById(id);
   }
   /**
-   * Add new user to database.
-   * @param user CreateUserDto
-   * @returns created User document
+   * Adds a new user to the database.
+   * @param user Data to create a user.
+   * @returns Created User document.
    */
   async addUser(user: CreateUserDto): Promise<User> {
     const newUser = new this.userModel(user);
@@ -76,16 +75,16 @@ export class UsersService {
   }
 
   /**
-   * Count all users.
-   * @returns number of users
+   * Returns number of users.
+   * @returns Count of users.
    */
   count() {
     return this.userModel.countDocuments();
   }
 
   /**
-   * Insert users in bulk.
-   * @param users array of user partials
+   * Inserts multiple users in bulk.
+   * @param users Array of user partials.
    */
   async bulkCreate(users: Partial<User>[]) {
     return this.userModel.insertMany(users);

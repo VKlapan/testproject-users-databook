@@ -1,7 +1,8 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpStatus, Logger } from '@nestjs/common';
+import { ExceptionFilter, Catch, ArgumentsHost, HttpStatus, Logger, HttpException } from '@nestjs/common';
 
 /**
  * Global exception filter to handle common MongoDB errors and validation errors.
+ * Passes through any HttpException (e.g., UnauthorizedException) to preserve correct status codes.
  */
 @Catch()
 export class MongoExceptionFilter implements ExceptionFilter {
@@ -13,6 +14,14 @@ export class MongoExceptionFilter implements ExceptionFilter {
   catch(exception: any, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
+
+    // Let HTTP exceptions pass through with their original status and response
+    if (exception instanceof HttpException) {
+      const status = exception.getStatus();
+      const res = exception.getResponse();
+      this.logger.warn(`HTTP exception: ${status} - ${JSON.stringify(res)}`);
+      return response.status(status).json(typeof res === 'object' ? res : { message: res });
+    }
 
     if (exception?.code === 11000) {
       const field = Object.keys(exception.keyValue)[0];

@@ -1,25 +1,25 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { Public } from '../common/decorators/public.decorator';
 
 /**
- * Controller that handles user-related endpoints.
- * Routes: GET /get-users, GET /get-user/:id, POST /add-user
+ * Controller exposing user endpoints.
  */
 @Controller()
 export class UsersController {
-    /**
-     * Construct a new UsersController
-     * @param usersService Users service
-     */
-    constructor(private readonly usersService: UsersService) {}
+  /**
+   * Create UsersController.
+   * @param usersService UsersService instance.
+   */
+  constructor(private readonly usersService: UsersService) {}
 
   @Get('get-users')
   /**
-   * Return paginated users.
-   * @param page page number (string; parsed to int)
-   * @param limit items per page (string; parsed to int)
-   * @param search optional search string (name/email/phone)
+   * Returns paginated users.
+   * @param page Page number.
+   * @param limit Items per page.
+   * @param search Optional search term.
    */
   async getUsers(
     @Query('page') page: string,
@@ -34,18 +34,19 @@ export class UsersController {
 
   @Get("get-user/:id")
   /**
-   * Get a user by id.
-   * @param id user id
+   * Returns a user by id.
+   * @param id User id.
    */
   async getUserById(@Param('id') id: string) {
     return this.usersService.getUserById(id);
   }
 
+  @Public()
   @Post("add-user")
   /**
-   * Add a new user.
+   * Registers a new user (public).
    * @param user CreateUserDto
-   * @returns created user or undefined on failure
+   * @returns Created user without sensitive fields.
    */
   async addUser(@Body() user: CreateUserDto) {
     const addedUser = await this.usersService.addUser(user);
@@ -54,6 +55,7 @@ export class UsersController {
       return;
     }
     console.log(`User with id ${addedUser._id} added.`);
-    return addedUser;
+    const { password, ...rest } = (addedUser as any).toObject ? (addedUser as any).toObject() : addedUser;
+    return rest;
   }
 }
