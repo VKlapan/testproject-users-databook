@@ -19,6 +19,10 @@ export class UsersController {
   @Post("add-user")
   async addUser(@Body() user: CreateUserDto) {
     const addedUser = await this.usersService.addUser(user);
+    if (!addedUser) {
+      console.error('Failed to add user');
+      return;
+    }
     console.log(`User with id ${addedUser._id} added.`);
     return addedUser;
   }
