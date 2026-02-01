@@ -9,10 +9,44 @@ export class UsersService {
     private userModel: Model<User>,
   ) {}
 
-  async getAllUsers(): Promise<User[]> {
-    return this.userModel.find();
-  }
+  async getUsers(options: { page: number; limit: number; search?: string }) {
+    const { page, limit, search } = options;
+
+    const query: any = {};
+
+    if (search) {
+      // Екранізуємо спецсимволи для regex
+      const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+      // Часткове співпадіння для name/email/phone
+      query.$or = [
+        { name: { $regex: escapedSearch, $options: 'i' } },
+        { email: { $regex: escapedSearch, $options: 'i' } },
+        { phone: { $regex: escapedSearch, $options: 'i' } },
+      ];
+    }
+
+
+    const total = await this.userModel.countDocuments(query);
+    const totalPages = Math.max(Math.ceil(total / limit), 1);
+
   
+    const currentPage = page > totalPages ? totalPages : page;
+
+    const users = await this.userModel
+      .find(query)
+      .skip((currentPage - 1) * limit)
+      .limit(limit)
+      .exec();
+
+    return {
+      data: users,
+      total,
+      currentPage,
+      pages: Math.ceil(total / limit),
+    };
+  }
+
   async getUserById(id: string): Promise<User | null> {
     return this.userModel.findById(id);
   }

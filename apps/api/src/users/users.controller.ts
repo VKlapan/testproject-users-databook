@@ -6,11 +6,18 @@ import { CreateUserDto } from './dto/create-user.dto';
 export class UsersController {
     constructor(private readonly usersService: UsersService) {}
 
-  @Get("get-users")
-  async getAllUsers() {
-    return this.usersService.getAllUsers();
-  }
+  @Get('get-users')
+  async getUsers(
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+    @Query('search') search: string, // може бути name/email/phone
+  ) {
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 10;
 
+    return this.usersService.getUsers({ page: pageNum, limit: limitNum, search });
+  }
+  
   @Get("get-user/:id")
   async getUserById(@Param('id') id: string) {
     return this.usersService.getUserById(id);
