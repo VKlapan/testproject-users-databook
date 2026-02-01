@@ -1,9 +1,15 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpStatus, Logger } from '@nestjs/common';
 
+/**
+ * Global exception filter to handle common MongoDB errors and validation errors.
+ */
 @Catch()
 export class MongoExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(MongoExceptionFilter.name);
 
+  /**
+   * Catch exceptions from controllers and return proper HTTP responses
+   */
   catch(exception: any, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();

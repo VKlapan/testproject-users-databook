@@ -1,5 +1,6 @@
 import * as mongoose from 'mongoose';
 
+/** Providers for database connection */
 export const databaseProviders = [
   {
     provide: 'DATABASE_CONNECTION',

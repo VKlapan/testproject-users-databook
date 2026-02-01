@@ -3,9 +3,20 @@ import { UsersService } from '../users/users.service';
 import { faker } from '@faker-js/faker';
 
 @Injectable()
+/**
+ * Service responsible for seeding initial data into DB.
+ * Implements OnModuleInit to run on module initialization.
+ */
 export class SeedService implements OnModuleInit {
+  /**
+   * Create seed service
+   * @param usersService UsersService used to insert users
+   */
   constructor(private readonly usersService: UsersService) {}
 
+  /**
+   * Called when the module is initialized; seeds users if none exist.
+   */
   async onModuleInit() {
     const count = await this.usersService.count();
     if (count > 0) {
@@ -41,6 +52,10 @@ export class SeedService implements OnModuleInit {
     console.log('Seed: Finished generating users!');
   }
 
+  /**
+   * Generate a random birth date string (DD-MM-YYYY).
+   * @returns birth date formatted as DD-MM-YYYY
+   */
   private generateBirthDate (): string {
   const year = faker.number.int({ min: 1970, max: 2005 });
   const month = faker.number.int({ min: 1, max: 12 });

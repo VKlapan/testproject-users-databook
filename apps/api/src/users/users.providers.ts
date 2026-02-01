@@ -1,6 +1,7 @@
 import { Connection } from 'mongoose';
 import { UserSchema } from './schemas/user.schema';
 
+/** Providers for user model injection */
 export const usersProviders = [
   {
     provide: 'USER_MODEL',
