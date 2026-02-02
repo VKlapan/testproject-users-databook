@@ -101,10 +101,18 @@ export class UsersService {
 
   /**
    * Inserts multiple users in bulk.
+   * Performs unordered insert (ordered: false). Logs errors but does not throw;
+   * returns count of successfully inserted documents.
    * @param users Array of user partials.
-   * @returns Promise<User[]>
+   * @returns Promise<{count: number}>
    */
-  async bulkCreate(users: Partial<User>[]) {
-    return this.userModel.insertMany(users);
+  async bulkCreate(users: Partial<User>[]): Promise<{ count: number }> {
+    try {
+      const result = await this.userModel.insertMany(users, { ordered: false });
+      return { count: result.length };
+    } catch (error: any) {
+      this.logger.error('Bulk insert encountered errors', error?.stack || error?.message || String(error));
+      return { count: 0 };
+    }
   }
 }
