@@ -14,6 +14,24 @@ A simple monorepo with a NestJS backend API and an Electron + React desktop clie
 - pnpm
 - MongoDB running (see apps/api/.env)
 
+## MongoDB (local via Docker)
+
+Example to run MongoDB locally with Docker:
+
+```bash
+docker run --name fanscrm-mongo \
+	-p 27017:27017 \
+	-e MONGO_INITDB_ROOT_USERNAME=admin \
+	-e MONGO_INITDB_ROOT_PASSWORD=admin123 \
+	-d mongo:7
+```
+
+Connection string used by default in apps/api/.env:
+
+```
+MONGODB_STRING="mongodb://admin:admin123@localhost:27017/users-db?authSource=admin"
+```
+
 ## Install
 
 ```bash
