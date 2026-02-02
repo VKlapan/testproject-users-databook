@@ -28,6 +28,7 @@ export function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [newUser, setNewUser] = useState({ email: '', name: '', phone: '', birthday: '' });
   const tokenLoaded = Boolean(import.meta.env.VITE_API_TOKEN);
   const [page, setPage] = useState(1);
@@ -37,6 +38,23 @@ export function UsersPage() {
   useEffect(() => {
     fetchUsers(page);
   }, [page]);
+
+  /**
+   * Builds a user-facing error message from API responses.
+   * @param err Unknown error
+   * @param fallback Fallback message
+   */
+  const formatApiError = (err: unknown, fallback: string) => {
+    const anyErr = err as { response?: { status?: number; data?: any }; message?: string };
+    const status = anyErr?.response?.status;
+    const data = anyErr?.response?.data;
+    const messageFromApi =
+      (typeof data === 'string' && data) ||
+      (typeof data?.message === 'string' && data.message) ||
+      (Array.isArray(data?.message) ? data.message.join(', ') : undefined);
+    const details = messageFromApi || anyErr?.message;
+    return status ? `${fallback} (HTTP ${status}${details ? `: ${details}` : ''})` : `${fallback}${details ? `: ${details}` : ''}`;
+  };
 
   /**
    * Loads a paginated user list.
@@ -51,7 +69,7 @@ export function UsersPage() {
       setUsers(data.data || []);
       setTotalPages(data.pages || 1);
     } catch (err) {
-      setError('Failed to fetch users. Ensure API is on http://localhost:3000 and VITE_API_TOKEN is set.');
+      setError(formatApiError(err, 'Failed to fetch users'));
       console.error(err);
     } finally {
       setLoading(false);
@@ -71,12 +89,16 @@ export function UsersPage() {
 
     setLoading(true);
     setError(null);
+    setSuccess(null);
     try {
-      await userAPI.createUser(newUser);
+      const response = await userAPI.createUser(newUser);
+      const created = response.data as Partial<User> | undefined;
+      const createdName = created?.name ? `: ${created.name}` : '';
+      setSuccess(`User created${createdName}`);
       setNewUser({ email: '', name: '', phone: '', birthday: '' });
       await fetchUsers(page);
     } catch (err) {
-      setError('Failed to create user');
+      setError(formatApiError(err, 'Failed to create user'));
       console.error(err);
     } finally {
       setLoading(false);
@@ -163,6 +185,7 @@ export function UsersPage() {
       </form>
 
       {error && <div className="error-message">{error}</div>}
+      {success && <div className="success-message">{success}</div>}
 
       {loading ? (
         <p>Loading...</p>
