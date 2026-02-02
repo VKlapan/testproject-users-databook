@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Param, Post, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Public } from '../common/decorators/public.decorator';
@@ -8,6 +8,7 @@ import { Public } from '../common/decorators/public.decorator';
  */
 @Controller()
 export class UsersController {
+    private readonly logger = new Logger(UsersController.name);
   /**
    * Create UsersController.
    * @param usersService UsersService instance.
@@ -50,12 +51,7 @@ export class UsersController {
    */
   async addUser(@Body() user: CreateUserDto) {
     const addedUser = await this.usersService.addUser(user);
-    if (!addedUser) {
-      console.error('Failed to add user');
-      return;
-    }
-    console.log(`User with id ${addedUser._id} added.`);
-    const { password, ...rest } = (addedUser as any).toObject ? (addedUser as any).toObject() : addedUser;
-    return rest;
+    this.logger.log(`User with id ${addedUser._id} added.`);
+    return addedUser;
   }
 }

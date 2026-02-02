@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Logger, InternalServerErrorException } from '@nestjs/common';
 import { User } from './interfaces/user.interface';
 import { CreateUserDto } from './dto/create-user.dto';
 @Injectable()
@@ -16,9 +16,12 @@ export class UsersService {
     private userModel: Model<User>,
   ) {}
 
+  private readonly logger = new Logger(UsersService.name);
+
   /**
    * Returns paginated users with optional search by name, email or phone.
    * @param options Pagination and optional search params.
+   * @returns Promise<{data: User[]; total: number; currentPage: number; pages: number}>
    */
   async getUsers(options: { page: number; limit: number; search?: string }) {
     const { page, limit, search } = options;
@@ -59,24 +62,38 @@ export class UsersService {
   /**
    * Returns a single user by id.
    * @param id User id.
-   * @returns User document or null.
+   * @returns Promise<User | null>
    */
   async getUserById(id: string): Promise<User | null> {
     return this.userModel.findById(id);
   }
   /**
-   * Adds a new user to the database.
+   * Create a new user.
+   *
+   * Duplicate key and Mongoose validation errors are handled by the global
+   * MongoExceptionFilter. Unexpected errors are logged and a generic 500 is
+   * returned to the client.
    * @param user Data to create a user.
    * @returns Created User document.
    */
   async addUser(user: CreateUserDto): Promise<User> {
-    const newUser = new this.userModel(user);
-    return newUser.save();
+    try {
+      const newUser = new this.userModel(user);
+      return await newUser.save();
+    } catch (error: any) {
+      if (error?.code === 11000 || error?.name === 'ValidationError') {
+        throw error;
+      }
+
+      this.logger.error('Failed to create user', error?.stack || error?.message || String(error));
+
+      throw new InternalServerErrorException('Failed to create user');
+    }
   }
 
   /**
    * Returns number of users.
-   * @returns Count of users.
+   * @returns Promise<number>
    */
   count() {
     return this.userModel.countDocuments();
@@ -85,6 +102,7 @@ export class UsersService {
   /**
    * Inserts multiple users in bulk.
    * @param users Array of user partials.
+   * @returns Promise<User[]>
    */
   async bulkCreate(users: Partial<User>[]) {
     return this.userModel.insertMany(users);
